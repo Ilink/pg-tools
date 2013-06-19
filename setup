@@ -1,0 +1,40 @@
+#!/bin/bash
+
+# Vars #########
+DBDIRPARENT=/usr/local/pgsql
+DBDIR=$DBDIRPARENT/data
+LOGDIR=/var/log/pgsql
+USERNAME=postgres
+
+
+# User Setup #########
+# id -u postgres &>/dev/null || useradd postgres
+
+# Mac
+MAXID=$(dscl . -list /Users UniqueID | awk '{print $2}' | sort -ug | tail -1)
+USERID=$((MAXID+1))
+
+dscl . -create /Users/$USERNAME
+dscl . -create /Users/$USERNAME UserShell /bin/bash
+dscl . -create /Users/$USERNAME UniqueID $USERID
+dscl . -passwd /Users/$USERNAME $USERNAME
+# dscl . create /Groups/postgres
+# dseditgroup -o edit -a $USERNAME -t user postgres
+# dscl . create /Groups/postgres RealName “postgres group”
+# dscl . create /Groups/postgres passwd “*”
+# dscl . create /Groups/postgres GroupMembership postgres
+# dscl . append /Groups/postgres GroupMembership postgres
+
+# Dir/File Setup #########
+sudo mkdir $DBDIRPARENT
+sudo mkdir $DBDIR
+sudo mkdir $LOGDIR
+sudo touch $LOGDIR/server.log
+
+sudo chown postgres $DBDIR
+sudo chown postgres $LOGDIR/server.log
+sudo chown postgres $DBDIR
+
+# PG Setup ########
+sudo -u postgres initdb -D $DBDIR
+# psql -f data/world.sql
